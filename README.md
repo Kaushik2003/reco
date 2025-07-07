@@ -1,5 +1,7 @@
 # Reco - Professional Portfolio Platform
 
+![Screenshot of Reco Portfolio Platform](public/placeholder-screenshot.png)
+
 Reco is a modern, customizable portfolio platform built with Next.js, Tailwind CSS, shadcn/ui, and Zustand. It enables professionals to create, manage, and showcase their portfolios with a beautiful, drag-and-drop interface and fully editable sections.
 
 ---
