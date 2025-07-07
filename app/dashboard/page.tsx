@@ -12,41 +12,30 @@ import { ProjectsCard } from "@/components/projects-card"
 import { TopBar } from "@/components/top-bar"
 import { mockData } from "@/lib/mock-data"
 import { usePortfolioOrder } from "@/hooks/use-portfolio-order"
+import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd"
 
 export default function DashboardPage() {
   const { sections, reorderSections } = usePortfolioOrder()
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedIndex(index)
-    e.dataTransfer.effectAllowed = "move"
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-  }
-
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault()
-    if (draggedIndex !== null && draggedIndex !== dropIndex) {
-      reorderSections(draggedIndex, dropIndex)
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return
+    if (result.source.index !== result.destination.index) {
+      reorderSections(result.source.index, result.destination.index)
     }
-    setDraggedIndex(null)
   }
 
   const renderSection = (sectionType: string) => {
     switch (sectionType) {
       case "education":
-        return <EducationCard education={mockData.education} />
+        return <EducationCard />
       case "technologies":
         return <TechnologiesCard />
       case "experience":
-        return <ExperienceCard experience={mockData.experience} />
+        return <ExperienceCard />
       case "certifications":
         return <CertificationsCard />
       case "projects":
-        return <ProjectsCard projects={mockData.projects} />
+        return <ProjectsCard />
       default:
         return null
     }
@@ -63,19 +52,26 @@ export default function DashboardPage() {
         {/* Main Content Area - Single Scroll */}
         <div className="content-layout">
           <div className="content-container section-spacing">
-            {sections
-              .sort((a, b) => a.order - b.order)
-              .map((section, index) => (
-                <DraggableSection
-                  key={section.id}
-                  id={section.id}
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                >
-                  {renderSection(section.type)}
-                </DraggableSection>
-              ))}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="sections-droppable">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {sections
+                      .sort((a, b) => a.order - b.order)
+                      .map((section, index) => (
+                        <DraggableSection
+                          key={section.id}
+                          id={section.id}
+                          index={index}
+                        >
+                          {renderSection(section.type)}
+                        </DraggableSection>
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           </div>
         </div>
       </div>
